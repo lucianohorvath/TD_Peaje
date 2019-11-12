@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="car.png" />
+    <None Include="rotated_car_2.png" />
     <None Include="rotated_car.png" />
   </ItemGroup>
   <ItemGroup>

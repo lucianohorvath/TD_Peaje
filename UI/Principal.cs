@@ -22,7 +22,8 @@ namespace UI
         private const int largoDeAuto = 4;          // metros de largo considerados en el Modelo
 
         // Atributos
-        private Image carImage;
+        private Image redCar;
+        private Image yellowCar;
         private IEnumerable<Vehiculo> vehiculos;
         private float factorDeCorreccion;
 
@@ -30,17 +31,17 @@ namespace UI
         {
             InitializeComponent();
             LoadImages();
-            factorDeCorreccion = carImage.Height * escalaImagen / largoDeAuto;
+            factorDeCorreccion = redCar.Height * escalaImagen / largoDeAuto;
             vehiculos = ConfigManager.getVehiculos();
             Thread t = new Thread(this.startThreads);
             t.IsBackground = true;
             t.Start();
-            //startThreads();
         }
 
         private void LoadImages()
         {
-            carImage = new Bitmap((Image)Properties.Resources.ResourceManager.GetObject("rotated_car"));
+            redCar = new Bitmap((Image)Properties.Resources.ResourceManager.GetObject("car_red"));
+            yellowCar = new Bitmap((Image)Properties.Resources.ResourceManager.GetObject("car_yellow"));
         }
 
         /// <summary>
@@ -69,16 +70,19 @@ namespace UI
             e.Graphics.FillRectangle(Brushes.Blue, 15, 50 * factorDeCorreccion + AltoCabina, AnchoCabina, AltoCabina);
 
             // Autos
+            Image carImage;
+            int i = 0;
             foreach (Vehiculo v in vehiculos)
             {
-                e.Graphics.DrawImage(carImage, 20, (v.posicion * factorDeCorreccion) + carImage.Height * escalaImagen, carImage.Width * escalaImagen, carImage.Height * escalaImagen);
+                e.Graphics.DrawImage(i % 2 == 0 ? redCar : yellowCar, 20, (v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen, redCar.Width * escalaImagen, redCar.Height * escalaImagen);
+                i++;
             }
         }
 
         private void startThreads()
         {
-            // Damos tiempo a que se levante el entorno gráfico...
-            Thread.Sleep(2000);
+            // Damos tiempo para que se levante el entorno gráfico...
+            Thread.Sleep(1500);
 
             CabinaPeaje cabina1 = ConfigManager.getCabinasPeaje().First();
             int frecuenciaVehiculos = ConfigManager.getFrecuenciaVehiculos();
