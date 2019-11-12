@@ -15,6 +15,11 @@ namespace ConsolaApp
             IEnumerable<Vehiculo> vehiculos = ConfigManager.getVehiculos();
             CabinaPeaje cabina1 = ConfigManager.getCabinasPeaje().First();
             int frecuenciaVehiculos = ConfigManager.getFrecuenciaVehiculos();
+            
+            Thread th = new Thread(cabina1.Operar);
+            th.Name = "Thread Cabina 1";
+            th.IsBackground = true;
+            th.Start();
 
             int i = 1;
             foreach (Vehiculo v in vehiculos)
@@ -25,15 +30,10 @@ namespace ConsolaApp
                 t.Name = $"Thread Vehículo {i}";
                 t.IsBackground = true;
                 t.Start();
-                Thread.Sleep(200);
+                Thread.Sleep(frecuenciaVehiculos);
 
                 i++;
-            }
-            
-            Thread th = new Thread(cabina1.Operar);
-            th.Name = "Thread Cabina 1";
-            th.IsBackground = true;
-            th.Start();
+            }            
 
             Console.ReadKey();
         }

@@ -13,12 +13,13 @@ namespace ConsolaApp
     public static class ConfigManager
     {
         private static string filename = ConfigurationManager.AppSettings["ConfigFileName"];
+        private static string fullPath = Path.GetFullPath(@"..\..\..\") + filename;
 
-        internal static IEnumerable<Vehiculo> getVehiculos()
+        public static IEnumerable<Vehiculo> getVehiculos()
         {
             List<Vehiculo> vehiculos = new List<Vehiculo>();
 
-            using (StreamReader r = new StreamReader(Path.GetFullPath(@"..\..\") + filename))
+            using (StreamReader r = new StreamReader(fullPath))
             {
                 string json = r.ReadToEnd();
                 vehiculos = JsonConvert.DeserializeObject<ConfigObject>(json).vehiculos;
@@ -27,11 +28,11 @@ namespace ConsolaApp
             return vehiculos;
         }
 
-        internal static IEnumerable<CabinaPeaje> getCabinasPeaje()
+        public static IEnumerable<CabinaPeaje> getCabinasPeaje()
         {
             List<CabinaPeaje> cabinas = new List<CabinaPeaje>();
 
-            using (StreamReader r = new StreamReader(Path.GetFullPath(@"..\..\") + filename))
+            using (StreamReader r = new StreamReader(fullPath))
             {
                 string json = r.ReadToEnd();
                 cabinas = JsonConvert.DeserializeObject<ConfigObject>(json).cabinas;
@@ -39,10 +40,10 @@ namespace ConsolaApp
 
             return cabinas;
         }
-        
-        internal static int getFrecuenciaVehiculos()
+
+        public static int getFrecuenciaVehiculos()
         {
-            using (StreamReader r = new StreamReader(Path.GetFullPath(@"..\..\") + filename))
+            using (StreamReader r = new StreamReader(fullPath))
             {
                 string json = r.ReadToEnd();
                 return JsonConvert.DeserializeObject<ConfigObject>(json).frecuenciaVehiculos;
@@ -52,7 +53,7 @@ namespace ConsolaApp
 
 
     // Representa la estructura del JSON de configuración para poder parsearlo correctamente
-    public class ConfigObject
+    internal class ConfigObject
     {
         public List<Vehiculo> vehiculos;
         public List<CabinaPeaje> cabinas;
