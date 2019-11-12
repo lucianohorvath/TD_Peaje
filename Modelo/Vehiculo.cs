@@ -20,6 +20,8 @@ namespace Modelo
         public CabinaPeaje cabina;
         #endregion
 
+        public static object objPos = new Object();     // Bloqueo para recalcular posiciones. Objeto compartido.
+
         public Vehiculo(string marca, string patente, uint velocidad, uint paciencia) 
         {
             this.marca = marca;
@@ -41,7 +43,6 @@ namespace Modelo
                 if (enCola)
                 {
                     Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Posición actual: {this.posicion}, esperando la cola del peaje");
-                    cabina.vehiculos.Enqueue(this.patente);
 
                     if (this.cabina.vehiculos.Count > this.paciencia)
                     {
@@ -56,27 +57,27 @@ namespace Modelo
                         cabina.semCola.WaitOne();
                         // Avanzo una posición (el largo de un auto)
                         posicion += 4;
-                        Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Posición actual: {this.posicion}, avanzó en la cola del peaje");
+                        Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Posición actual: {this.posicion} metros, avanzó en la cola del peaje");
                     }
 
                     // Comienzo a pagar...
-                    Monitor.Enter(this.cabina.objPago);
-
+                    Monitor.Enter(cabina.objPago);
+                    Monitor.Pulse(cabina.objPago);
                     // Espero que la cabina de peaje me despierte...
                     Monitor.Wait(cabina.objPago);
                     if (impaciente)
                     {
                         Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - ¡Al fin! El conductor dejó de tocar bocina");
-                       // cabina.bocinazos--;
+                        cabina.bocinazos--;
                     }
 
                     // Me levantó la barrera
-                    Monitor.Exit(this.cabina.objPago);
+                    Monitor.Exit(cabina.objPago);
                 }
 
                 if (this.posicion > 100)
                 {
-                    Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Saliendo de autopista...");
+                    salirDeAutopista();
                     enAutopista = false;
                 }
             }
@@ -93,6 +94,7 @@ namespace Modelo
         {
             bool enCola = false;
             uint posiblePosicion = posicion + (velocidad * 1000 / 3600);
+            Monitor.Enter(objPos);
             uint posicionUltimoAuto = CabinaPeaje.posicion - (uint)(cabina.vehiculos.Count * 4);
 
             if (posiblePosicion <= posicionUltimoAuto || this.posicion >= CabinaPeaje.posicion)
@@ -102,9 +104,17 @@ namespace Modelo
             else {
                 this.posicion = posicionUltimoAuto;
                 enCola = true;
+                cabina.vehiculos.Enqueue(this.patente);
             }
+            Monitor.Exit(objPos);
 
             return enCola;
+        }
+
+        private void salirDeAutopista()
+        {
+            Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Saliendo de autopista...");
+            this.posicion = 200;        // posición final, lo alejo de los otros gráficos
         }
     }
 }

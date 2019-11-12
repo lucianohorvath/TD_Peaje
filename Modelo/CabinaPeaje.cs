@@ -34,7 +34,7 @@ namespace Modelo
         [ThreadStatic] public object objPago;
         #endregion
 
-        public Semaphore semCola = new Semaphore(1, 1);
+        public Semaphore semCola = new Semaphore(0, 10);
 
         public CabinaPeaje(uint numero, int demora)
         {
@@ -48,6 +48,7 @@ namespace Modelo
         {
             while (true)
             {
+                Monitor.Enter(this.objPago);
                 Thread.Sleep(100);
                 if (bocinazos > limiteBocinazos)
                 {
@@ -55,18 +56,21 @@ namespace Modelo
                 }
                 if (vehiculos.Count > 0)
                 {
-                    Monitor.Enter(this.objPago);
+                    //Monitor.Enter(this.objPago);
 
                     Console.WriteLine($"Cabina número {this.numero} - Operando con vehículo {vehiculos.Peek()}");
                     Thread.Sleep(demora);
                     Console.WriteLine($"Cabina número {this.numero} - Barrera levantada, pasa el vehículo {vehiculos.Dequeue()}");
-                    this.semCola.Release();
-
-                    Monitor.Pulse(this.objPago);
-
-                    Monitor.Exit(this.objPago);
+                    if (vehiculos.Count > 0)
+                    {
+                        Console.WriteLine($"Cabina número {this.numero} - Aviso: Pueden avanzar los {vehiculos.Count} vehículos que están esperando");
+                        this.semCola.Release(vehiculos.Count);
+                    }
                 }
-            }            
+                Monitor.Pulse(this.objPago);
+                Monitor.Wait(this.objPago);
+                Monitor.Exit(this.objPago);
+            }        
         }
 
         private void LevantarBarrera()
@@ -77,8 +81,8 @@ namespace Modelo
                 Monitor.Enter(this.objPago);
                 Thread.Sleep(100);
                 Console.WriteLine($"Cabina número {this.numero} - Barrera levantada, pasa el vehículo {vehiculos.Dequeue()}");
-                bocinazos--;
                 this.semCola.Release();
+
                 Monitor.Pulse(this.objPago);
                 Monitor.Exit(this.objPago);
             }
