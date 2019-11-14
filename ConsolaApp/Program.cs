@@ -13,20 +13,31 @@ namespace ConsolaApp
         static void Main(string[] args)
         {
             IEnumerable<Vehiculo> vehiculos = Configuracion.Facade.getVehiculos();
-            CabinaPeaje cabina1 = Configuracion.Facade.getCabinasPeaje().First();
+            IEnumerable<CabinaPeaje> cabinas = Configuracion.Facade.getCabinasPeaje();
             int frecuenciaVehiculos = Configuracion.Facade.getFrecuenciaVehiculos();
             Vehiculo.velocidadRefresco = Configuracion.Facade.getRefrescoConsola();
-            
-            Thread th = new Thread(cabina1.Operar);
-            th.Name = "Thread Cabina 1";
-            th.IsBackground = true;
-            th.Start();
+            bool carrilAleatorio = Configuracion.Facade.getCarrilesAleatorios();
+
+            int j = 1;
+            foreach (CabinaPeaje cp in cabinas)
+            {
+                Thread t = new Thread(cp.Operar);
+                t.Name = $"Thread Cabina {j}";
+                t.IsBackground = true;
+                t.Start();
+                j++;
+            }
 
             int i = 1;
             foreach (Vehiculo v in vehiculos)
             {
-                v.cabina = cabina1;
-
+                if (carrilAleatorio)
+                {
+                    Random random = new Random();
+                    int numeroCabina = random.Next(1, cabinas.Count() + 1);
+                    v.carril = (uint)numeroCabina;
+                }
+                v.cabina = cabinas.ToList().Find(c => c.numero == v.carril);
                 Thread t = new Thread(v.Conducir);
                 t.Name = $"Thread Vehículo {i}";
                 t.IsBackground = true;
@@ -34,8 +45,8 @@ namespace ConsolaApp
                 Thread.Sleep(frecuenciaVehiculos);
 
                 i++;
-            }            
-
+            }         
+            
             Console.ReadKey();
         }
     }

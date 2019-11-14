@@ -39,7 +39,7 @@
 		{ "patente": "RST111",
 		  "marca": "Fiat",
 		  "velocidad": 60,
-		  "paciencia": 2,
+		  "paciencia": 0,
 		  "carril": 2,
 		},
 		{ "patente": "RST222",
@@ -63,7 +63,7 @@
 		{ "patente": "PPP222",
 		  "marca": "Fiat",
 		  "velocidad": 60,
-		  "paciencia": 2,
+		  "paciencia": 0,
 		  "carril": 3,
 		},
 		{ "patente": "PPP333",
@@ -92,7 +92,7 @@
 		},
 		{
 			"numero": 3,
-			"demora": 1500,
+			"demora": 2000,
 			"limite_bocinazos": 2,
 		},
 		{
@@ -104,5 +104,5 @@
 	"frecuencia_vehiculos": 10,
 	"refresco_pantalla": 200,
 	"refresco_consola": 200,
-	"carriles_aleatorios": false,
+	"carriles_aleatorios": true,
 }
