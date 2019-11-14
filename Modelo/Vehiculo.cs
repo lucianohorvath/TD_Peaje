@@ -11,6 +11,7 @@ namespace Modelo
     {
         #region Propiedades estáticas
         public static int finalAutopista = 80;          // Altura en metros a la que termina la autopista
+        public static int largoAuto = 4;                // Largo en metros de cada vehículo
         public static int velocidadRefresco = 1000;     // Cada cuántos ms el vehículo recalcula su posición
         public static object objPos = new Object();     // Bloqueo para recalcular posiciones. Objeto compartido.
         #endregion
@@ -22,6 +23,7 @@ namespace Modelo
         public uint posicion = 0;        // Posición en metros respecto a la autopista
         public uint paciencia;           // Cantidad de autos que es capaz de tolerar en la cola
         public bool impaciente;          // Estado actual del conductor
+        public uint carril;              // El carril por el que conduce coincide con el número de cabina de peaje
 
         public CabinaPeaje cabina;
         #endregion
@@ -48,11 +50,9 @@ namespace Modelo
                 {
                     Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Posición actual: {this.posicion}, esperando la cola del peaje");
 
-                    if (this.cabina.vehiculos.Count > this.paciencia)
+                    if (cabina.getVehiculosEsperando() > paciencia)
                     {
-                        Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Conductor impaciente. ¡Comienza a tocar bocina!");
-                        impaciente = true;
-                        cabina.bocinazos++;
+                        tocarBocina();
                     }
 
                     while(posicion < CabinaPeaje.posicion)
@@ -69,11 +69,11 @@ namespace Modelo
                     Monitor.Pulse(cabina.objPago);
                     // Espero que la cabina de peaje me despierte...
                     Monitor.Wait(cabina.objPago);
+                    Console.WriteLine("---------- deje de esperar! soy " + patente);
                     if (impaciente)
                     {
                         Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - ¡Al fin! El conductor dejó de tocar bocina");
                         impaciente = false;
-                        cabina.bocinazos--;
                     }
 
                     // Me levantó la barrera
@@ -101,14 +101,7 @@ namespace Modelo
             bool enCola = false;
             uint posiblePosicion = posicion + (velocidad * (uint)velocidadRefresco / 3600);
             Monitor.Enter(objPos);
-            uint posicionUltimoAuto = CabinaPeaje.posicion - (uint)(cabina.vehiculos.Count * 4);
-            if (patente == "AA222AA")
-            {
-                //Console.WriteLine("------- debug ----");
-                //Console.WriteLine($"posible posicion: {posiblePosicion} -- ");
-                //Console.WriteLine($"posicion Ultimo Auto: {posicionUltimoAuto} -- ");
-                //Console.WriteLine("------- debug ----");
-            }
+            uint posicionUltimoAuto = CabinaPeaje.posicion - (uint)(cabina.getVehiculosEsperando() * largoAuto);
 
             if (posiblePosicion < posicionUltimoAuto || this.posicion >= CabinaPeaje.posicion)
             {
@@ -117,17 +110,29 @@ namespace Modelo
             else {
                 this.posicion = posicionUltimoAuto;
                 enCola = true;
-                cabina.vehiculos.Enqueue(this.patente);
+                cabina.vehiculos.Enqueue(this);
             }
             Monitor.Exit(objPos);
 
             return enCola;
         }
 
+        private void tocarBocina()
+        {
+            Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Conductor impaciente. ¡Comienza a tocar bocina!");
+            impaciente = true;
+            cabina.bocinazos++;
+        }
+
         private void salirDeAutopista()
         {
             Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Saliendo de autopista...");
             this.posicion = 200;        // posición final, lo alejo de los otros gráficos
+        }
+
+        public override string ToString()
+        {
+            return this.patente;
         }
     }
 }

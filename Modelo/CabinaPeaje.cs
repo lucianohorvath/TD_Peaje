@@ -21,7 +21,7 @@ namespace Modelo
         [ThreadStatic] public int demora;
 
         // Representa cuántos vehículos están demorados en un instante determinado
-        [ThreadStatic] public Queue<string> vehiculos;
+        [ThreadStatic] public Queue<Vehiculo> vehiculos;
 
         // Representa cuántos bocinazos es capaz de tolerar antes de levantar la barrera
         [JsonProperty("limite_bocinazos")]
@@ -29,6 +29,9 @@ namespace Modelo
 
         // Representa cuántos bocinazos está escuchando en un instante determinado
         [ThreadStatic] public uint bocinazos = 0;
+
+        // Representa si la barrera está levantada en un instante determinado (por bocinazos)
+        [ThreadStatic] public bool barreraLevantada;
 
         // Representa el bloqueo en la operación de pagar
         [ThreadStatic] public object objPago;
@@ -40,7 +43,7 @@ namespace Modelo
         {
             this.numero = numero;
             this.demora = demora;
-            this.vehiculos = new Queue<string>();
+            this.vehiculos = new Queue<Vehiculo>();
             this.objPago = new Object();
         }
 
@@ -54,10 +57,8 @@ namespace Modelo
                 {
                     LevantarBarrera();
                 }
-                if (vehiculos.Count > 0)
+                else if (vehiculos.Count > 0)
                 {
-                    //Monitor.Enter(this.objPago);
-
                     Console.WriteLine($"--> Cabina número {this.numero} - Operando con vehículo {vehiculos.Peek()}");
                     Thread.Sleep(demora);
                     Console.WriteLine($"--> Cabina número {this.numero} - Barrera levantada, pasa el vehículo {vehiculos.Dequeue()}");
@@ -75,18 +76,37 @@ namespace Modelo
 
         private void LevantarBarrera()
         {
+            this.barreraLevantada = true;
             Console.WriteLine($"--> Cabina número {this.numero} - Ya no tolera los bocinazos. Levantando barrera...");
             while (bocinazos > limiteBocinazos / 2)
             {
                 Monitor.Enter(this.objPago);
-                Thread.Sleep(100);
-                Console.WriteLine($"--> Cabina número {this.numero} - Barrera levantada, pasa el vehículo {vehiculos.Dequeue()}");
-                this.semCola.Release();
+                Thread.Sleep(500);
+                Vehiculo vehiculoEnPeaje = vehiculos.Dequeue();
+                Console.WriteLine($"--> Cabina número {this.numero} - Barrera levantada (libre), pasa el vehículo {vehiculoEnPeaje}");
+                if (vehiculoEnPeaje.impaciente)
+                {
+                    bocinazos--;
+                }
+                if (vehiculos.Count > 0)
+                {
+                    Console.WriteLine($"--> Cabina número {this.numero} - Aviso: Pueden avanzar los {vehiculos.Count} vehículos que están esperando");
+                    this.semCola.Release(vehiculos.Count);
+                }
 
                 Monitor.Pulse(this.objPago);
                 Monitor.Exit(this.objPago);
             }
+            this.barreraLevantada = false;
             Console.WriteLine($"--> Cabina número {this.numero} - Funcionamiento normal reestablecido");
+        }
+
+        /// <summary>
+        /// Retorna la cantidad de vehículos que están esperando en la cola del peaje.
+        /// </summary>
+        public int getVehiculosEsperando()
+        {
+            return vehiculos.Count;
         }
     }
 }
