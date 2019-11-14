@@ -106,6 +106,7 @@ namespace UI
 
             int frecuenciaVehiculos = Configuracion.Facade.getFrecuenciaVehiculos();
             Vehiculo.velocidadRefresco = Configuracion.Facade.getRefrescoConsola();
+            bool carrilAleatorio = Configuracion.Facade.getCarrilesAleatorios();
 
             int j = 1;
             foreach(CabinaPeaje cp in cabinas)
@@ -121,9 +122,12 @@ namespace UI
             int i = 0;
             foreach (Vehiculo v in vehiculos)
             {
-                // if carriles aleatorios
-                //      random... entre 1 y cabinas.count
-                // else 
+                if (carrilAleatorio)
+                {
+                    Random random = new Random();
+                    int numeroCabina = random.Next(1, cabinas.Count() + 1);
+                    v.carril = (uint)numeroCabina;
+                }
                 v.cabina = cabinas.ToList().Find(c => c.numero == v.carril);
                 threadsVehiculo[i] = new Thread(v.Conducir);
                 threadsVehiculo[i].Name = $"Thread Vehículo {i+1}";

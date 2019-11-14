@@ -50,6 +50,15 @@ namespace Configuracion
         }
 
         /// <summary>
+        /// Obtiene si los vehículos aparecerán en carriles aleatorios.
+        /// Si es falso, se respetará el carril indicado en cada vehículo.
+        /// </summary>
+        public static bool getCarrilesAleatorios()
+        {
+            return Manager.getCarrilesAleatorios();
+        }
+
+        /// <summary>
         /// Obtiene el path absoluto del archivo de configuración.
         /// </summary>
         public static string getFilePath()

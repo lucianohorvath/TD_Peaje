@@ -22,5 +22,9 @@ namespace Configuracion
         // Es también la frecuencia de recálculo de posición de los vehículos.
         [JsonProperty("refresco_consola")]
         internal int refrescoConsola;
+
+        // Representa si los vehículos aparecerán en carriles aleatorios
+        [JsonProperty("carriles_aleatorios")]
+        internal bool carrilesAleatorios;
     }
 }
