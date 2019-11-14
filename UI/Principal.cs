@@ -75,7 +75,6 @@ namespace UI
         private void InitConfig()
         {
             timerRefresh.Interval = Configuracion.Facade.getRefrescoPantalla();
-            timerRefresh.Start();
             factorDeCorreccion = redCar.Height * escalaImagen / largoDeAuto;
             vehiculos = Configuracion.Facade.getVehiculos();
             cabinas = Configuracion.Facade.getCabinasPeaje();
@@ -150,9 +149,6 @@ namespace UI
         /// </summary>
         private void preguntarReinicio()
         {
-            // Espero que se dibuje una vez más para que se reflejen las posiciones reales
-            Thread.Sleep(timerRefresh.Interval);
-            timerRefresh.Stop();
             DialogResult res = MessageBox.Show("¿Desea volver a realizar la simulación?", 
                 "Fin de la simulación", 
                 MessageBoxButtons.YesNo);
@@ -196,19 +192,18 @@ namespace UI
 
         private void dibujarCabinas(Graphics graphics)
         {
-            //e.Graphics.FillRectangle(Brushes.Blue, 15, 50 * factorDeCorreccion + AltoCabina, AnchoCabina, AltoCabina);
-            //e.Graphics.FillRectangle(Brushes.LightYellow, 15, 50 * factorDeCorreccion, this.Width - 100, AltoCabina);    // linea de epsera de autos
-            // ver po que no coinciden perfectamente los autos en la linea de espera
+            // Línea de espera de los vehículos
+            graphics.FillRectangle(Brushes.LightYellow, 15, 50 * factorDeCorreccion, this.Width - 100, altoCabina);
 
-            int x = 25;
+            int xPos = 25;
             foreach(CabinaPeaje cp in cabinas)
             {
-                graphics.DrawImage(toll, x, 50 * factorDeCorreccion + altoCabina, anchoCabina, altoCabina);
+                graphics.DrawImage(toll, xPos, 50 * factorDeCorreccion + altoCabina, anchoCabina, altoCabina);
                 if (cp.barreraLevantada)
                 {
-                    graphics.DrawImage(semaphore, x-20, 50 * factorDeCorreccion + altoCabina, 23, 46);
+                    graphics.DrawImage(semaphore, xPos - 20, 50 * factorDeCorreccion + altoCabina, 23, 46);
                 }
-                x += distanciaEntreCabinas;
+                xPos += distanciaEntreCabinas;
             }
         }
 
@@ -217,13 +212,17 @@ namespace UI
             int i = 0;
             foreach (Vehiculo v in vehiculos)
             {
-                //Console.WriteLine((v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen);  debug
                 int xPos = 40 + (((int)v.carril - 1) * distanciaEntreCabinas);
-                graphics.DrawImage(i % 2 == 0 ? redCar : yellowCar, xPos, (v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen, redCar.Width * escalaImagen, redCar.Height * escalaImagen);
+                float yPos = (v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen;
+
+                graphics.DrawImage(i % 2 == 0 ? redCar : yellowCar, 
+                    xPos, yPos, 
+                    redCar.Width * escalaImagen, redCar.Height * escalaImagen);
+
                 if (v.impaciente)
                 {
                     // Dibujo el parlante a la derecha del vehículo
-                    graphics.DrawImage(speaker, xPos + redCar.Width * escalaImagen, (v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen, speaker.Width * escalaImagen, speaker.Height * escalaImagen);
+                    graphics.DrawImage(speaker, xPos + redCar.Width * escalaImagen, yPos, speaker.Width * escalaImagen, speaker.Height * escalaImagen);
 
                     // Hago sonar una bocina
                     if (i % 2 == 0)
