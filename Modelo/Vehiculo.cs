@@ -14,6 +14,7 @@ namespace Modelo
         public static int largoAuto = 4;                // Largo en metros de cada vehículo
         public static int velocidadRefresco = 1000;     // Cada cuántos ms el vehículo recalcula su posición
         public static object objPos = new Object();     // Bloqueo para recalcular posiciones. Objeto compartido.
+        // este último bloquea TODOS los vehículos, sería mejor tenerlo en la cabina para que bloquee sólo a los del carril
         #endregion
 
         #region Propiedades
@@ -50,9 +51,10 @@ namespace Modelo
                 {
                     Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Posición actual: {this.posicion}, esperando la cola del peaje");
 
-                    if (cabina.getVehiculosEsperando() > paciencia)
+                    int vehiculosAdelante = cabina.getVehiculosEsperando() - 1;
+                    if (vehiculosAdelante > paciencia)
                     {
-                        tocarBocina();
+                        tocarBocina(vehiculosAdelante);
                     }
 
                     while(posicion < CabinaPeaje.posicion)
@@ -69,7 +71,6 @@ namespace Modelo
                     Monitor.Pulse(cabina.objPago);
                     // Espero que la cabina de peaje me despierte...
                     Monitor.Wait(cabina.objPago);
-                    Console.WriteLine("---------- deje de esperar! soy " + patente);
                     if (impaciente)
                     {
                         Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - ¡Al fin! El conductor dejó de tocar bocina");
@@ -117,9 +118,9 @@ namespace Modelo
             return enCola;
         }
 
-        private void tocarBocina()
+        private void tocarBocina(int vehiculosAdelante)
         {
-            Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Conductor impaciente. ¡Comienza a tocar bocina!");
+            Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Conductor impaciente: \"¿{vehiculosAdelante} vehículos? Qué desastre\" ¡Comienza a tocar bocina!");
             impaciente = true;
             cabina.bocinazos++;
         }
