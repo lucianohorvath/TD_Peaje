@@ -17,7 +17,7 @@
 		},
 		{ "patente": "AA444AA",
 		  "marca": "Fiat",
-		  "velocidad": 100,
+		  "velocidad": 120,
 		  "paciencia": 2,
 		},
 		{ "patente": "AA555AA",
@@ -38,5 +38,7 @@
 			"limite_bocinazos": 4,
 		}
 	],
-	"frecuencia_vehiculos": 1500,
+	"frecuencia_vehiculos": 7500,
+	"refresco_pantalla": 400,
+	"refresco_consola": 1000,
 }

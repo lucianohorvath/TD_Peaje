@@ -12,9 +12,9 @@ namespace ConsolaApp
     {
         static void Main(string[] args)
         {
-            IEnumerable<Vehiculo> vehiculos = ConfigManager.getVehiculos();
-            CabinaPeaje cabina1 = ConfigManager.getCabinasPeaje().First();
-            int frecuenciaVehiculos = ConfigManager.getFrecuenciaVehiculos();
+            IEnumerable<Vehiculo> vehiculos = Configuracion.Facade.getVehiculos();
+            CabinaPeaje cabina1 = Configuracion.Facade.getCabinasPeaje().First();
+            int frecuenciaVehiculos = Configuracion.Facade.getFrecuenciaVehiculos();
             
             Thread th = new Thread(cabina1.Operar);
             th.Name = "Thread Cabina 1";
