@@ -18,7 +18,8 @@ namespace Configuracion
         [JsonProperty("refresco_pantalla")]
         internal int refrescoPantalla;
 
-        // Representa cada cuántos milisegundos se refresca la salida de consola
+        // Representa cada cuántos milisegundos se refresca la salida de consola.
+        // Es también la frecuencia de recálculo de posición de los vehículos.
         [JsonProperty("refresco_consola")]
         internal int refrescoConsola;
     }

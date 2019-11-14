@@ -15,6 +15,7 @@ namespace ConsolaApp
             IEnumerable<Vehiculo> vehiculos = Configuracion.Facade.getVehiculos();
             CabinaPeaje cabina1 = Configuracion.Facade.getCabinasPeaje().First();
             int frecuenciaVehiculos = Configuracion.Facade.getFrecuenciaVehiculos();
+            Vehiculo.velocidadRefresco = Configuracion.Facade.getRefrescoConsola();
             
             Thread th = new Thread(cabina1.Operar);
             th.Name = "Thread Cabina 1";

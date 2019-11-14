@@ -58,12 +58,12 @@ namespace Modelo
                 {
                     //Monitor.Enter(this.objPago);
 
-                    Console.WriteLine($"Cabina número {this.numero} - Operando con vehículo {vehiculos.Peek()}");
+                    Console.WriteLine($"--> Cabina número {this.numero} - Operando con vehículo {vehiculos.Peek()}");
                     Thread.Sleep(demora);
-                    Console.WriteLine($"Cabina número {this.numero} - Barrera levantada, pasa el vehículo {vehiculos.Dequeue()}");
+                    Console.WriteLine($"--> Cabina número {this.numero} - Barrera levantada, pasa el vehículo {vehiculos.Dequeue()}");
                     if (vehiculos.Count > 0)
                     {
-                        Console.WriteLine($"Cabina número {this.numero} - Aviso: Pueden avanzar los {vehiculos.Count} vehículos que están esperando");
+                        Console.WriteLine($"--> Cabina número {this.numero} - Aviso: Pueden avanzar los {vehiculos.Count} vehículos que están esperando");
                         this.semCola.Release(vehiculos.Count);
                     }
                 }
@@ -75,18 +75,18 @@ namespace Modelo
 
         private void LevantarBarrera()
         {
-            Console.WriteLine($"Cabina número {this.numero} - Ya no tolera los bocinazos. Levantando barrera...");
+            Console.WriteLine($"--> Cabina número {this.numero} - Ya no tolera los bocinazos. Levantando barrera...");
             while (bocinazos > limiteBocinazos / 2)
             {
                 Monitor.Enter(this.objPago);
                 Thread.Sleep(100);
-                Console.WriteLine($"Cabina número {this.numero} - Barrera levantada, pasa el vehículo {vehiculos.Dequeue()}");
+                Console.WriteLine($"--> Cabina número {this.numero} - Barrera levantada, pasa el vehículo {vehiculos.Dequeue()}");
                 this.semCola.Release();
 
                 Monitor.Pulse(this.objPago);
                 Monitor.Exit(this.objPago);
             }
-            Console.WriteLine($"Cabina número {this.numero} - Funcionamiento normal reestablecido");
+            Console.WriteLine($"--> Cabina número {this.numero} - Funcionamiento normal reestablecido");
         }
     }
 }

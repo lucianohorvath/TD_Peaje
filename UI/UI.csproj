@@ -81,14 +81,16 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="car.png" />
-    <None Include="rotated_car_2.png" />
-    <None Include="rotated_car.png" />
+    <Content Include="Resources\car.png" />
+    <None Include="Resources\toll_booth.png" />
+    <None Include="Resources\speaker.png" />
+    <None Include="Resources\rotated_car_2.png" />
+    <None Include="Resources\rotated_car.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConsolaApp\ConsolaApp.csproj">
-      <Project>{3A8133E0-D12E-40B8-A4A8-B0C613CB4DFE}</Project>
-      <Name>ConsolaApp</Name>
+    <ProjectReference Include="..\Configuracion\Configuracion.csproj">
+      <Project>{bfe864f9-56e7-40a6-840c-7bc3ed9c7824}</Project>
+      <Name>Configuracion</Name>
     </ProjectReference>
     <ProjectReference Include="..\Modelo\Modelo.csproj">
       <Project>{FABE85C9-007A-4A55-9ABD-8212B8C783B7}</Project>

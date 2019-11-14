@@ -9,6 +9,12 @@ namespace Modelo
 {
     public class Vehiculo
     {
+        #region Propiedades estáticas
+        public static int finalAutopista = 80;          // Altura en metros a la que termina la autopista
+        public static int velocidadRefresco = 1000;     // Cada cuántos ms el vehículo recalcula su posición
+        public static object objPos = new Object();     // Bloqueo para recalcular posiciones. Objeto compartido.
+        #endregion
+
         #region Propiedades
         public string marca;
         public string patente;
@@ -19,8 +25,6 @@ namespace Modelo
 
         public CabinaPeaje cabina;
         #endregion
-
-        public static object objPos = new Object();     // Bloqueo para recalcular posiciones. Objeto compartido.
 
         public Vehiculo(string marca, string patente, uint velocidad, uint paciencia) 
         {
@@ -37,7 +41,7 @@ namespace Modelo
             {
                 Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - Posición actual: {this.posicion} metros");
                 // Manejo durante x milisegundos...
-                Thread.Sleep(1000);
+                Thread.Sleep(velocidadRefresco);
                 bool enCola = calcularNuevaPosicion();
 
                 if (enCola)
@@ -68,6 +72,7 @@ namespace Modelo
                     if (impaciente)
                     {
                         Console.WriteLine($"{Thread.CurrentThread.Name} - Vehículo {this.patente} - ¡Al fin! El conductor dejó de tocar bocina");
+                        impaciente = false;
                         cabina.bocinazos--;
                     }
 
@@ -75,7 +80,7 @@ namespace Modelo
                     Monitor.Exit(cabina.objPago);
                 }
 
-                if (this.posicion > 100)
+                if (this.posicion > finalAutopista)
                 {
                     salirDeAutopista();
                     enAutopista = false;
@@ -88,16 +93,24 @@ namespace Modelo
         /// Puede avanzar tanto como su velocidad lo indica si no sobrepasa el 
         /// último auto en la cola (o la cabina de peaje si no existe cola).
         /// Se asume que todos los autos miden 4 metros de largo.
+        /// No se calculan aquí las posiciones internas a una eventual cola.
         /// </summary>
         /// <returns>Verdadero si el auto está en cola.</returns>
         private bool calcularNuevaPosicion()
         {
             bool enCola = false;
-            uint posiblePosicion = posicion + (velocidad * 1000 / 3600);
+            uint posiblePosicion = posicion + (velocidad * (uint)velocidadRefresco / 3600);
             Monitor.Enter(objPos);
             uint posicionUltimoAuto = CabinaPeaje.posicion - (uint)(cabina.vehiculos.Count * 4);
+            if (patente == "AA222AA")
+            {
+                //Console.WriteLine("------- debug ----");
+                //Console.WriteLine($"posible posicion: {posiblePosicion} -- ");
+                //Console.WriteLine($"posicion Ultimo Auto: {posicionUltimoAuto} -- ");
+                //Console.WriteLine("------- debug ----");
+            }
 
-            if (posiblePosicion <= posicionUltimoAuto || this.posicion >= CabinaPeaje.posicion)
+            if (posiblePosicion < posicionUltimoAuto || this.posicion >= CabinaPeaje.posicion)
             {
                 this.posicion = posiblePosicion;
             }

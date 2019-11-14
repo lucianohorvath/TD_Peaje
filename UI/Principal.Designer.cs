@@ -29,30 +29,72 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Principal));
+            this.timerRefresh = new System.Windows.Forms.Timer(this.components);
+            this.labelCeroMetros = new System.Windows.Forms.Label();
+            this.labelFinalMetros = new System.Windows.Forms.Label();
+            this.buttonConfiguration = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // timer1
+            // timerRefresh
             // 
-            this.timer1.Enabled = true;
-            this.timer1.Interval = 200;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            this.timerRefresh.Enabled = true;
+            this.timerRefresh.Interval = 200;
+            this.timerRefresh.Tick += new System.EventHandler(this.timerRefresh_Tick);
+            // 
+            // labelCeroMetros
+            // 
+            this.labelCeroMetros.AutoSize = true;
+            this.labelCeroMetros.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F);
+            this.labelCeroMetros.Location = new System.Drawing.Point(492, 719);
+            this.labelCeroMetros.Name = "labelCeroMetros";
+            this.labelCeroMetros.Size = new System.Drawing.Size(67, 18);
+            this.labelCeroMetros.TabIndex = 0;
+            this.labelCeroMetros.Text = "0 metros";
+            // 
+            // labelFinalMetros
+            // 
+            this.labelFinalMetros.AutoSize = true;
+            this.labelFinalMetros.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F);
+            this.labelFinalMetros.Location = new System.Drawing.Point(492, 154);
+            this.labelFinalMetros.Name = "labelFinalMetros";
+            this.labelFinalMetros.Size = new System.Drawing.Size(83, 18);
+            this.labelFinalMetros.TabIndex = 1;
+            this.labelFinalMetros.Text = "100 metros";
+            // 
+            // buttonConfiguration
+            // 
+            this.buttonConfiguration.Location = new System.Drawing.Point(495, 13);
+            this.buttonConfiguration.Name = "buttonConfiguration";
+            this.buttonConfiguration.Size = new System.Drawing.Size(91, 23);
+            this.buttonConfiguration.TabIndex = 2;
+            this.buttonConfiguration.Text = "Configuración";
+            this.buttonConfiguration.UseVisualStyleBackColor = true;
+            this.buttonConfiguration.Click += new System.EventHandler(this.buttonConfiguration_Click);
             // 
             // Principal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(598, 658);
+            this.ClientSize = new System.Drawing.Size(598, 780);
+            this.Controls.Add(this.buttonConfiguration);
+            this.Controls.Add(this.labelFinalMetros);
+            this.Controls.Add(this.labelCeroMetros);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Principal";
-            this.Text = "Form1";
+            this.Text = "Simulador de Peaje";
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Principal_Paint);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Timer timerRefresh;
+        private System.Windows.Forms.Label labelCeroMetros;
+        private System.Windows.Forms.Label labelFinalMetros;
+        private System.Windows.Forms.Button buttonConfiguration;
     }
 }
 

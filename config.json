@@ -38,7 +38,7 @@
 			"limite_bocinazos": 4,
 		}
 	],
-	"frecuencia_vehiculos": 7500,
-	"refresco_pantalla": 400,
-	"refresco_consola": 1000,
+	"frecuencia_vehiculos": 1000,
+	"refresco_pantalla": 500,
+	"refresco_consola": 500,
 }

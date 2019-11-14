@@ -48,5 +48,10 @@ namespace Configuracion
         {
             return JsonConvert.DeserializeObject<ConfigObject>(json).refrescoConsola;
         }
+
+        internal static string getFileFullPath()
+        {
+            return fullPath;
+        }
     }
 }
