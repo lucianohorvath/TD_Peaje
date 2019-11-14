@@ -71,6 +71,24 @@ namespace UI.Properties {
         }
         
         /// <summary>
+        ///   Busca un recurso adaptado de tipo System.IO.UnmanagedMemoryStream similar a System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream car_horn_1 {
+            get {
+                return ResourceManager.GetStream("car_horn_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.IO.UnmanagedMemoryStream similar a System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream car_horn_2 {
+            get {
+                return ResourceManager.GetStream("car_horn_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap car_red {
@@ -86,6 +104,16 @@ namespace UI.Properties {
         internal static System.Drawing.Bitmap car_yellow {
             get {
                 object obj = ResourceManager.GetObject("car_yellow", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap semaphore {
+            get {
+                object obj = ResourceManager.GetObject("semaphore", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

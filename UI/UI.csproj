@@ -82,6 +82,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\car.png" />
+    <None Include="Resources\semaphore.png" />
+    <None Include="Resources\car_horn_2.wav" />
+    <None Include="Resources\car_horn_1.wav" />
     <None Include="Resources\toll_booth.png" />
     <None Include="Resources\speaker.png" />
     <None Include="Resources\rotated_car_2.png" />

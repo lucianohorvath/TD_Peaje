@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,24 +15,32 @@ namespace UI
 {
     public partial class Principal : Form
     {
-        // Constantes
-        private const int AnchoCabina = 40;
-        private const int AltoCabina = 50;
+        #region Constantes
+        private const int anchoCabina = 40;
+        private const int altoCabina = 50;
+        private const int distanciaEntreCabinas = 140;
         private const float escalaImagen = 0.14F;
         private const int largoDeAuto = 4;          // metros de largo considerados en el Modelo
+        #endregion
 
-        // Atributos
+        #region Atributos
         private Image redCar;
         private Image yellowCar;
         private Image speaker;
         private Image toll;
+        private Image semaphore;
+        private SoundPlayer carHorn1;
+        private SoundPlayer carHorn2;
         private IEnumerable<Vehiculo> vehiculos;
+        private IEnumerable<CabinaPeaje> cabinas;
         private float factorDeCorreccion;
+        #endregion
 
         public Principal()
         {
             InitializeComponent();
             LoadImages();
+            LoadSounds();
             InitConfig();
             FixUI();
             Thread t = new Thread(this.startSimulation);
@@ -39,12 +48,25 @@ namespace UI
             t.Start();
         }
 
+        /// <summary>
+        /// Carga todas las imágenes en bitmaps una sola vez al levantar el proyecto.
+        /// Rota las imágenes ya que se trabaja con un eje cartesiano invertido.
+        /// </summary>
         private void LoadImages()
         {
             redCar = new Bitmap((Image)Properties.Resources.ResourceManager.GetObject("car_red"));
             yellowCar = new Bitmap((Image)Properties.Resources.ResourceManager.GetObject("car_yellow"));
             speaker = new Bitmap((Image)Properties.Resources.ResourceManager.GetObject("speaker"));
             toll = new Bitmap((Image)Properties.Resources.ResourceManager.GetObject("toll_booth"));
+            semaphore = new Bitmap((Image)Properties.Resources.ResourceManager.GetObject("semaphore"));
+            toll.RotateFlip(RotateFlipType.Rotate180FlipX);
+            semaphore.RotateFlip(RotateFlipType.Rotate180FlipX);
+        }
+
+        private void LoadSounds()
+        {
+            carHorn1 = new SoundPlayer(Properties.Resources.car_horn_1);
+            carHorn2 = new SoundPlayer(Properties.Resources.car_horn_2);
         }
 
         /// <summary>
@@ -53,8 +75,10 @@ namespace UI
         private void InitConfig()
         {
             timerRefresh.Interval = Configuracion.Facade.getRefrescoPantalla();
+            timerRefresh.Start();
             factorDeCorreccion = redCar.Height * escalaImagen / largoDeAuto;
             vehiculos = Configuracion.Facade.getVehiculos();
+            cabinas = Configuracion.Facade.getCabinasPeaje();
         }
 
         private void FixUI()
@@ -80,20 +104,27 @@ namespace UI
             // Damos tiempo para que se levante el entorno gráfico...
             Thread.Sleep(1000);
 
-            CabinaPeaje cabina1 = Configuracion.Facade.getCabinasPeaje().First();
             int frecuenciaVehiculos = Configuracion.Facade.getFrecuenciaVehiculos();
             Vehiculo.velocidadRefresco = Configuracion.Facade.getRefrescoConsola();
 
-            Thread th = new Thread(cabina1.Operar);
-            th.Name = "Thread Cabina 1";
-            th.IsBackground = true;
-            th.Start();
+            int j = 1;
+            foreach(CabinaPeaje cp in cabinas)
+            {
+                Thread th = new Thread(cp.Operar);
+                th.Name = $"Thread Cabina {j}";
+                th.IsBackground = true;
+                th.Start();
+                j++;
+            }
 
             Thread[] threadsVehiculo = new Thread[vehiculos.Count()];
             int i = 0;
             foreach (Vehiculo v in vehiculos)
             {
-                v.cabina = cabina1;
+                // if carriles aleatorios
+                //      random... entre 1 y cabinas.count
+                // else 
+                v.cabina = cabinas.ToList().Find(c => c.numero == v.carril);
                 threadsVehiculo[i] = new Thread(v.Conducir);
                 threadsVehiculo[i].Name = $"Thread Vehículo {i+1}";
                 threadsVehiculo[i].IsBackground = true;
@@ -115,12 +146,16 @@ namespace UI
         /// </summary>
         private void preguntarReinicio()
         {
+            // Espero que se dibuje una vez más para que se reflejen las posiciones reales
+            Thread.Sleep(timerRefresh.Interval);
+            timerRefresh.Stop();
             DialogResult res = MessageBox.Show("¿Desea volver a realizar la simulación?", 
                 "Fin de la simulación", 
                 MessageBoxButtons.YesNo);
             if (res == DialogResult.Yes)
             {
-                vehiculos = Configuracion.Facade.getVehiculos();
+                // Reinicializo configuración antes de empezar
+                InitConfig();
                 startSimulation();
             }
             else if (res == DialogResult.No)
@@ -144,26 +179,8 @@ namespace UI
             e.Graphics.TranslateTransform(0.0F, -(float)Height);
                         
             dibujarLineasPrincipioYFin(e.Graphics);
-
-            // Cabinas de peaje
-            //e.Graphics.FillRectangle(Brushes.Blue, 15, 50 * factorDeCorreccion + AltoCabina, AnchoCabina, AltoCabina);
-            //e.Graphics.FillRectangle(Brushes.LightYellow, 15, 50 * factorDeCorreccion, this.Width - 100, AltoCabina);    // linea de epsera de autos
-            // ver po que no coinciden perfectamente los autos en la linea de espera
-            e.Graphics.DrawImage(toll, 15, 50 * factorDeCorreccion + AltoCabina, AnchoCabina, AltoCabina);
-
-            // Autos
-            int i = 0;
-            foreach (Vehiculo v in vehiculos)
-            {
-                //Console.WriteLine((v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen);
-                e.Graphics.DrawImage(i % 2 == 0 ? redCar : yellowCar, 30, (v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen, redCar.Width * escalaImagen, redCar.Height * escalaImagen);
-                if (v.impaciente)
-                {
-                    // Dibujo el parlante con misma posición y tamaño que vehículo pero desplazado en eje X
-                    e.Graphics.DrawImage(speaker, 30 + redCar.Width * escalaImagen, (v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen, speaker.Width * escalaImagen, speaker.Height * escalaImagen);
-                }
-                i++;
-            }
+            dibujarCabinas(e.Graphics);
+            dibujarVehiculos(e.Graphics);
         }
 
         private void dibujarLineasPrincipioYFin(Graphics graphics)
@@ -171,6 +188,51 @@ namespace UI
             Pen p = new Pen(Brushes.Black, 15);
             graphics.DrawLine(p, 10, 60, this.Width - 100, 60);
             graphics.DrawLine(p, 10, Vehiculo.finalAutopista * factorDeCorreccion + 15, this.Width - 100, Vehiculo.finalAutopista * factorDeCorreccion + 15);
+        }
+
+        private void dibujarCabinas(Graphics graphics)
+        {
+            //e.Graphics.FillRectangle(Brushes.Blue, 15, 50 * factorDeCorreccion + AltoCabina, AnchoCabina, AltoCabina);
+            //e.Graphics.FillRectangle(Brushes.LightYellow, 15, 50 * factorDeCorreccion, this.Width - 100, AltoCabina);    // linea de epsera de autos
+            // ver po que no coinciden perfectamente los autos en la linea de espera
+
+            int x = 25;
+            foreach(CabinaPeaje cp in cabinas)
+            {
+                graphics.DrawImage(toll, x, 50 * factorDeCorreccion + altoCabina, anchoCabina, altoCabina);
+                if (cp.barreraLevantada)
+                {
+                    graphics.DrawImage(semaphore, x-20, 50 * factorDeCorreccion + altoCabina, 23, 46);
+                }
+                x += distanciaEntreCabinas;
+            }
+        }
+
+        private void dibujarVehiculos(Graphics graphics)
+        {
+            int i = 0;
+            foreach (Vehiculo v in vehiculos)
+            {
+                //Console.WriteLine((v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen);  debug
+                int xPos = 40 + (((int)v.carril - 1) * distanciaEntreCabinas);
+                graphics.DrawImage(i % 2 == 0 ? redCar : yellowCar, xPos, (v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen, redCar.Width * escalaImagen, redCar.Height * escalaImagen);
+                if (v.impaciente)
+                {
+                    // Dibujo el parlante a la derecha del vehículo
+                    graphics.DrawImage(speaker, xPos + redCar.Width * escalaImagen, (v.posicion * factorDeCorreccion) + redCar.Height * escalaImagen, speaker.Width * escalaImagen, speaker.Height * escalaImagen);
+
+                    // Hago sonar una bocina
+                    if (i % 2 == 0)
+                    {
+                        carHorn1.Play();
+                    } 
+                    else
+                    {
+                        carHorn2.Play();
+                    }
+                }
+                i++;
+            }
         }
         #endregion
 
